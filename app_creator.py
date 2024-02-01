@@ -1,10 +1,9 @@
-import plotly.express as px
-import pandas as pd
+import dash_bootstrap_components as dbc
 
-from dash import Dash, html, dash_table, dcc
-
-from stock_data_repository import StockDataRepository
-from return_provider import ReturnProvider
+from dash import Dash, html
+from dash_bootstrap_templates import load_figure_template
+from components.main_content import MainContent
+from components.sidebar import Sidebar
 
 
 class AppCreator:
@@ -16,23 +15,14 @@ class AppCreator:
         Returns:
             Flask: The Flask aplication server
         """
-        app = Dash(__name__)
+        app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+        load_figure_template('BOOTSTRAP')
 
-        sdr = StockDataRepository()
-        rp = ReturnProvider(sdr)
-        ret = rp.get_cumulative_return_data(pd.Timestamp(2010, 1, 1), pd.Timestamp(2024, 1, 1))
-        ret = ret.reset_index()
-        ret.columns.name = 'Stocks'
-        sd = sdr.get_stock_standing_data(ret.columns)
+        sidebar = Sidebar()
+        main = MainContent(app, sidebar)
 
-        fig = px.line(ret, x='Date', y=ret.columns)
-        fig.update_layout(yaxis_title='Return')
-        app.layout = html.Div([
-            html.Div(children='Stock returns plot'),
-            html.Hr(),
-            dcc.Graph(figure=fig, id='controls-and-graph'),
-            dash_table.DataTable(data=sd.to_dict('records'), page_size=10),
-        ])
+        app.layout = dbc.Container(dbc.Row([dbc.Col(sidebar.comp, width=3),
+                                            dbc.Col(main.comp)]))
 
         return app.server
 

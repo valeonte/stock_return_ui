@@ -95,5 +95,5 @@ if __name__ == "__main__":
     print(list(sdr.get_stocks_with_prices()))
     print(msft)
 
-    sd = sdr.get_stock_standing_data('MSFT')
+    sd = sdr.get_stock_standing_data(['MSFT'])
     print(sd)

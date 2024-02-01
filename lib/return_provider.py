@@ -3,7 +3,7 @@ import pandas as pd
 
 from typing import List
 
-from stock_data_repository import StockDataRepository
+from lib.stock_data_repository import StockDataRepository
 
 
 class ReturnProvider:
@@ -55,6 +55,7 @@ class ReturnProvider:
         """
         ret = self.get_stock_return_data(from_date=from_date, to_date=to_date, tickers=tickers)
         return (ret + 1).cumprod() - 1
+
 
 if __name__ == "__main__":
     
