@@ -11,6 +11,8 @@ Run instructions:
 3) Make sure `.venv` environment is activated, then run `python -m flask run`
 4) You should be able to visit `http://localhost:5000` to see the app running.
 
+> ***WARNING*** This was only tested on Python 3.11!
+
 ## Documentation
 
 The app displays the performance of 10 US stocks and a portfolio of those stocks over a period. The price data were pulled from [Yahoo Finance](https://finance.yahoo.com/) and the standing data for the stocks were pulled from the [Wikipedia S&P 500 page](https://en.wikipedia.org/wiki/List_of_S%26P_500_companies).
