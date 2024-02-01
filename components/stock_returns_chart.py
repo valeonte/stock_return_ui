@@ -6,10 +6,15 @@ from lib.return_provider import ReturnProvider
 
 
 class StockReturnsChart:
-    """Stock returns chart component."""
+    """Stock returns chart component.
+    
+    Just creates and refreshes the stock returns chart.
+    """
     def __init__(self, rp: ReturnProvider, app: Dash, start_date, end_date, refresh_button):
+        # Populating the component
         self.comp = dcc.Graph()
 
+        # The callback to refresh the component as needed
         @app.callback(
             Output(self.comp, "figure"),
             State(start_date, "date"),

@@ -8,10 +8,14 @@ from lib.portfolio_performance import PortfolioPerformanceProvider, Weighting
 
 
 class PortfolioPerformanceComponents:
-    """Stock returns chart component."""
+    """Stock returns chart component.
+    
+    This uses all the outputs of PortfolioPerformanceProvider to render them on the app.
+    """
     def __init__(self, ppp: PortfolioPerformanceProvider, app: Dash,
                  tickers: List[str],
                  start_date, end_date, weighting, refresh_button):
+        # We exposure the controls we populate, so that they can be referenced from the caller
         self.port_cum_perf = dcc.Graph()
         self.port_stock_weights = dcc.Graph()
         self.port_stock_contr = dcc.Graph()
@@ -19,6 +23,7 @@ class PortfolioPerformanceComponents:
         self.port_sector_weights = dcc.Graph()
         self.performance_table = dbc.Table(bordered=True)
 
+        # The callback that will populate the controls
         @app.callback(
             Output(self.port_cum_perf, "figure"),
             Output(self.port_stock_weights, "figure"),
@@ -76,6 +81,7 @@ class PortfolioPerformanceComponents:
             secwgt.layout.yaxis.tickformat = ',.0%'
             secwgt.update_layout(xaxis_title=None, yaxis_title=None)
 
+            # Populate the performance table
             perf_table = html.Tbody([html.Tr([html.Th('Annualised Return:', style={'text-align': 'right'}),
                                               html.Td(f'{100*perf.port_ann_ret:.2f}%')]),
                                      html.Tr([html.Th('Annualised Volatility:', style={'text-align': 'right'}),

@@ -12,9 +12,14 @@ SIDEBAR_STYLE = {
 
 
 class Sidebar:
-    """Sidebar component provider."""
+    """Sidebar component provider.
+    
+    This instantiates the sidebar and the controls there.
+    """
 
     def __init__(self):
+        # We exposure all the controls, as they will be needed to hook onto callbacks
+        # All the parameters we are passing, could be provided from the class constructor
         self.start_date = dcc.DatePickerSingle(display_format='D MMM YYYY',
                                                min_date_allowed=dt.date(2000, 1, 1),
                                                max_date_allowed=dt.date(2024, 1, 26),
@@ -29,6 +34,7 @@ class Sidebar:
         
         self.refresh = dbc.Button('Refresh')
 
+        # Create the actual sidebar component
         self.comp = html.Div([html.H2('Stock Return UI'),
             html.Hr(),
             dbc.Row([dbc.Col(html.H6('Start Date'), style={'text-align': 'right'}),

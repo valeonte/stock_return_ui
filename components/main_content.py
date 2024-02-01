@@ -15,21 +15,26 @@ from lib.portfolio_performance import PortfolioPerformanceProvider
 
 
 class MainContent:
-    """Main content component provider."""
+    """Main content component provider.
+    
+    This is where classes are instantiated and the dependency injection happens.
+    It builds the main content of the application.
+    """
     def __init__(self, app: Dash, sidebar: Sidebar):
-        self.sidebar = sidebar
-        self.app = app
-
+        # Instantiate the data providers
         sdr = StockDataRepository()
         rp = ReturnProvider(sdr=sdr)
         ppp = PortfolioPerformanceProvider(rp=rp, sdr=sdr)
 
+        # Get the tickers to use
         tickers = list(sdr.get_stocks_with_prices())
 
+        # Instantiate the component providers
         src = StockReturnsChart(rp, app, sidebar.start_date, sidebar.end_date, sidebar.refresh)
         sdt = StockDataTable(sdr, tickers)
         ppc = PortfolioPerformanceComponents(ppp, app, tickers, sidebar.start_date, sidebar.end_date, sidebar.weighting, sidebar.refresh)
 
+        # Create the tabs
         self.comp = dcc.Tabs([
             dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading(src.comp))), label='Stock Returns'),
             dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading([ppc.port_cum_perf, ppc.performance_table]))), label='Portfolio Performance'),

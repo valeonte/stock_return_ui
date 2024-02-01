@@ -40,8 +40,13 @@ class PortfolioPerformanceData:
 
 
 class PortfolioPerformanceProvider:
-    """Class to construct portfolios."""
+    """Constructs hypothetical portfolios and calculates performance.
+    
+    To avoid repeating calculations, we produce all the portfolio performance relevant data in one go,
+    as they all use the same underlying data.
+    """
     def __init__(self, rp: ReturnProvider = None, sdr: StockDataRepository = None, inverse_vol_window_weeks: int = 156):
+        # Injecting the dependencies here, but also instantiating if not provided for easier debugging
         self.__sdr = sdr or StockDataRepository()
         self.__rp = rp or ReturnProvider(self.__sdr)
         self.inverse_vol_window_weeks = inverse_vol_window_weeks
