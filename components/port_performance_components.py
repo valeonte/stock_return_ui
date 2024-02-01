@@ -1,6 +1,7 @@
 import plotly.express as px
+import dash_bootstrap_components as dbc
 
-from dash import Dash, Input, Output, State, dcc
+from dash import Dash, Input, Output, State, dcc, html
 from typing import List
 
 from lib.portfolio_performance import PortfolioPerformanceProvider, Weighting
@@ -16,6 +17,7 @@ class PortfolioPerformanceComponents:
         self.port_stock_contr = dcc.Graph()
         self.port_sector_contr = dcc.Graph()
         self.port_sector_weights = dcc.Graph()
+        self.performance_table = dbc.Table(bordered=True)
 
         @app.callback(
             Output(self.port_cum_perf, "figure"),
@@ -23,6 +25,7 @@ class PortfolioPerformanceComponents:
             Output(self.port_stock_contr, "figure"),
             Output(self.port_sector_contr, "figure"),
             Output(self.port_sector_weights, "figure"),
+            Output(self.performance_table, 'children'),
             State(start_date, "date"),
             State(end_date, "date"),
             State(weighting, "value"),
@@ -73,4 +76,11 @@ class PortfolioPerformanceComponents:
             secwgt.layout.yaxis.tickformat = ',.0%'
             secwgt.update_layout(xaxis_title=None, yaxis_title=None)
 
-            return port_perf, swgt, scontr, secontr, secwgt
+            perf_table = html.Tbody([html.Tr([html.Th('Annualised Return:', style={'text-align': 'right'}),
+                                              html.Td(f'{100*perf.port_ann_ret:.2f}%')]),
+                                     html.Tr([html.Th('Annualised Volatility:', style={'text-align': 'right'}),
+                                              html.Td(f'{100*perf.port_ann_vol:.2f}%')]),
+                                     html.Tr([html.Th('Sharpe Ratio:', style={'text-align': 'right'}),
+                                              html.Td(f'{perf.port_sharpe_ratio:.2f}')])])
+
+            return port_perf, swgt, scontr, secontr, secwgt, perf_table

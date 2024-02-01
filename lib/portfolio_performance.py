@@ -1,5 +1,6 @@
 
 import pandas as pd
+import numpy as np
 
 from typing import List
 from enum import Enum
@@ -30,13 +31,20 @@ class PortfolioPerformanceData:
     sector_contribution: pd.DataFrame
     sector_weights: pd.DataFrame
 
+    port_ann_ret: float
+    port_ann_vol: float
+
+    @property
+    def port_sharpe_ratio(self):
+        return self.port_ann_ret / self.port_ann_vol
+
 
 class PortfolioPerformanceProvider:
     """Class to construct portfolios."""
-    def __init__(self, rp: ReturnProvider = None, sdr: StockDataRepository = None, inverse_vol_window: int = 252):
+    def __init__(self, rp: ReturnProvider = None, sdr: StockDataRepository = None, inverse_vol_window_weeks: int = 156):
         self.__sdr = sdr or StockDataRepository()
         self.__rp = rp or ReturnProvider(self.__sdr)
-        self.inverse_vol_window = inverse_vol_window
+        self.inverse_vol_window_weeks = inverse_vol_window_weeks
 
     def calculate_portfolio_performance(self,
                                         from_date: pd.Timestamp,
@@ -71,19 +79,21 @@ class PortfolioPerformanceProvider:
         elif weighting == Weighting.INVERSE_VOL:
             # Extending history to calculate vols
             new_to_date = ret.index.min() - pd.offsets.BDay(1)
-            new_from_date = new_to_date - pd.offsets.BDay(self.inverse_vol_window)
+            new_from_date = new_to_date - pd.offsets.Week(self.inverse_vol_window_weeks)
             pre_ret = self.__rp.get_stock_return_data(new_from_date, new_to_date, tickers)
             ext_ret = pd.concat([pre_ret, ret])
             
             # Calculating rolling vol
-            vol = ext_ret.rolling(window=self.inverse_vol_window, min_periods=self.inverse_vol_window//2).std()
-            # aligning with returns and inversing
-            vol = 1 / vol.reindex(ret.index)
+            # Resampling to weekly to calculate vol
+            ext_ret = (ext_ret + 1).resample('W-FRI').prod() - 1
+            vol = ext_ret.rolling(window=self.inverse_vol_window_weeks, min_periods=self.inverse_vol_window_weeks//2).std()
+            # Back to daily, aligning with returns and inversing
+            vol = 1 / vol.resample('B').ffill().reindex(ret.index)
             # The apply the weights in the same fashion, populating only non-NA cells
             for col in ret.columns:
                 mask = ~ret[col].isna() & ~vol[col].isna()
                 wgt.loc[mask, col] = vol.loc[mask, col]
-            
+
             wgt = wgt.div(wgt.sum(1), axis=0)
 
         # Calculate daily stock contributions
@@ -101,14 +111,22 @@ class PortfolioPerformanceProvider:
 
         # Sum to get portfolio daily return
         port_ret = contr.sum(1)
+        
+        # Annualised volatility
+        ann_vol = port_ret.std() * np.sqrt(252)
+
         # Cumulative product to get cumulative return
         cum_ret = (port_ret + 1).cumprod() - 1
+        
+        # Annualised return
+        ann_ret = (cum_ret.iloc[-1] + 1) ** (252/len(cum_ret)) - 1
 
         # Construct the struct to return
         pp = PortfolioPerformanceData(tickers=tickers, weighting=weighting,
                                       port_cum_perf=cum_ret, stock_contributions=contr,
                                       stock_weights=wgt, sector_contribution=sector_contr,
-                                      sector_weights=sector_wgt)
+                                      sector_weights=sector_wgt,
+                                      port_ann_ret=ann_ret, port_ann_vol=ann_vol)
 
         return pp
 

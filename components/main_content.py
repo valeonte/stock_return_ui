@@ -31,11 +31,11 @@ class MainContent:
         ppc = PortfolioPerformanceComponents(ppp, app, tickers, sidebar.start_date, sidebar.end_date, sidebar.weighting, sidebar.refresh)
 
         self.comp = dcc.Tabs([
-            dcc.Tab(dbc.Card(dbc.CardBody(src.comp)), label='Stock Returns'),
-            dcc.Tab(dbc.Card(dbc.CardBody(ppc.port_cum_perf)), label='Portfolio Performance'),
+            dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading(src.comp))), label='Stock Returns'),
+            dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading([ppc.port_cum_perf, ppc.performance_table]))), label='Portfolio Performance'),
             dcc.Tab(dbc.Card(dbc.CardBody(sdt.comp)), label='Stock Details'),
-            dcc.Tab(dbc.Card(dbc.CardBody(ppc.port_stock_weights)), label='Stock Weights'),
-            dcc.Tab(dbc.Card(dbc.CardBody(ppc.port_stock_contr)), label='Stock Contributions'),
-            dcc.Tab(dbc.Card(dbc.CardBody(ppc.port_sector_weights)), label='Sector Weights'),
-            dcc.Tab(dbc.Card(dbc.CardBody(ppc.port_sector_contr)), label='Sector Contributions')
+            dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading(ppc.port_stock_weights))), label='Stock Weights'),
+            dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading(ppc.port_stock_contr))), label='Stock Contributions'),
+            dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading(ppc.port_sector_weights))), label='Sector Weights'),
+            dcc.Tab(dbc.Card(dbc.CardBody(dcc.Loading(ppc.port_sector_contr))), label='Sector Contributions')
             ])
